@@ -149,8 +149,10 @@ python generate_gushiwen.py
     (ROOT / "README.md").write_text(readme, encoding="utf-8")
 
     merged = merge_volume_md("九年级上册", "9A_古诗文汇编.md")
+    merged_b = merge_volume_md("九年级下册", "9B_古诗文汇编.md")
     print(f"Generated {len(ALL_WORKS)} works ({meta['year']} edition).")
     print(f"Merged 9A -> {merged.name}")
+    print(f"Merged 9B -> {merged_b.name}")
 
 
 if __name__ == "__main__":
