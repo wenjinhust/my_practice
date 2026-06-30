@@ -60,6 +60,47 @@ VOLUME_DIR = {
 }
 
 
+def _demote_headings(content: str, levels: int = 1) -> str:
+    prefix = "#" * levels
+    out = []
+    for line in content.splitlines():
+        if line.startswith("#"):
+            out.append(f"{prefix}{line}")
+        else:
+            out.append(line)
+    return "\n".join(out).strip()
+
+
+def merge_volume_md(volume_key: str, output_name: str) -> Path:
+    """将单册目录下各篇 MD（不含 README）合并为一个文件。"""
+    subdir = ROOT / VOLUME_DIR[volume_key]
+    files = sorted(
+        p for p in subdir.glob("*.md") if p.name != "README.md"
+    )
+    lines = [
+        f"# {volume_key} · 古诗文汇编",
+        "",
+        f"共 **{len(files)}** 篇。",
+        "",
+        "## 目录",
+        "",
+    ]
+    for p in files:
+        title = p.read_text(encoding="utf-8").splitlines()[0].lstrip("# ").strip()
+        anchor = p.stem
+        lines.append(f"- [{title}](#{anchor})")
+    lines.append("")
+    for p in files:
+        anchor = p.stem
+        body = _demote_headings(p.read_text(encoding="utf-8"))
+        lines += [f'<a id="{anchor}"></a>', "", body, "", "---", ""]
+    if lines[-1] == "---":
+        lines = lines[:-2]
+    out = ROOT / output_name
+    out.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return out
+
+
 def main() -> None:
     upper = [w for w in ALL_WORKS if w["volume"] == "九年级上册"]
     lower = [w for w in ALL_WORKS if w["volume"] == "九年级下册"]
@@ -106,7 +147,10 @@ python generate_gushiwen.py
 ```
 """
     (ROOT / "README.md").write_text(readme, encoding="utf-8")
+
+    merged = merge_volume_md("九年级上册", "9A_古诗文汇编.md")
     print(f"Generated {len(ALL_WORKS)} works ({meta['year']} edition).")
+    print(f"Merged 9A -> {merged.name}")
 
 
 if __name__ == "__main__":
