@@ -12,17 +12,10 @@ ROOT = Path(__file__).parent
 
 
 def render_work(w: dict) -> str:
-    meta = TEXTBOOK_META
     lines = [
         f"# {w['title']}",
         "",
-        f"> **教材**：{meta['edition']}（{meta['standard']}）  ",
-        f"> **出版社**：{meta['publisher']}  ",
-        f"> **册别**：{w['volume']}  ",
-        f"> **单元**：{w.get('unit', '—')}  ",
-        f"> **课序**：{w.get('lesson', '—')}  ",
-        f"> **作者**：{w['author']}  ",
-        f"> **类型**：{w.get('kind', '课内')}",
+        f"> **作者**：{w['author']}",
         "",
         "## 原文",
         "",
@@ -61,20 +54,26 @@ def render_index(works: list[dict], title: str, catalog: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+VOLUME_DIR = {
+    "九年级上册": "9A",
+    "九年级下册": "9B",
+}
+
+
 def main() -> None:
     upper = [w for w in ALL_WORKS if w["volume"] == "九年级上册"]
     lower = [w for w in ALL_WORKS if w["volume"] == "九年级下册"]
 
     for w in ALL_WORKS:
-        subdir = ROOT / w["volume"]
+        subdir = ROOT / VOLUME_DIR[w["volume"]]
         subdir.mkdir(parents=True, exist_ok=True)
         (subdir / w["filename"]).write_text(render_work(w), encoding="utf-8")
 
-    (ROOT / "九年级上册" / "README.md").write_text(
+    (ROOT / "9A" / "README.md").write_text(
         render_index(upper, "九年级上册 · 古诗文目录", UPPER_CATALOG),
         encoding="utf-8",
     )
-    (ROOT / "九年级下册" / "README.md").write_text(
+    (ROOT / "9B" / "README.md").write_text(
         render_index(lower, "九年级下册 · 古诗文目录", LOWER_CATALOG),
         encoding="utf-8",
     )
@@ -96,8 +95,8 @@ def main() -> None:
 
 | 册别 | 篇数 | 目录 |
 | --- | --- | --- |
-| 九年级上册 | {len(upper)} | [查看目录](九年级上册/README.md) |
-| 九年级下册 | {len(lower)} | [查看目录](九年级下册/README.md) |
+| 九年级上册 | {len(upper)} | [查看目录](9A/README.md) |
+| 九年级下册 | {len(lower)} | [查看目录](9B/README.md) |
 | **合计** | **{len(ALL_WORKS)}** | — |
 
 ## 生成方式
